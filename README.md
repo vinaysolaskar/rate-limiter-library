@@ -45,14 +45,14 @@ Token Bucket
 
 ### Sliding Window Counter Example
 
--Code: 
--{
+- Code: 
+- {
     - const SlidingWindowCounter = require('./src/algorithms/slidingWindowCounter');
     - const limiter = new SlidingWindowCounter({ windowSize: 60000, limit: 100 }); // 100 requests per minute
     - const userKey = 'user456';
     - if (limiter.tryRequest(userKey)) {// Allow request}
     - else {// Block request (rate limited)}
--}
+- }
 
 ---
 
