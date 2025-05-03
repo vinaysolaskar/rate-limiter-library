@@ -9,10 +9,11 @@ Designed for easy integration, customization, and future expansion (Redis suppor
 ## Features
 
 - Token Bucket rate limiting algorithm
+- Sliding Window Counter rate limiting algorithm
 - Per-user/IP rate limiting (by key)
 - In-memory storage (fast, simple)
 - Easy to use in any Node.js backend
-- Ready for middleware integration (Express adapter coming soon)
+- Express middleware adapter for seamless integration
 - Unit tested
 
 ---
@@ -56,6 +57,30 @@ Token Bucket
 
 ---
 
+### Express Middleware Usage
+
+- Code:
+- {
+    - const express = require('express');
+    - const TokenBucket = require('./src/algorithms/tokenBucket');
+    - const expressRateLimiter = require('./src/adapters/express');
+    - const limiter = new TokenBucket({ capacity: 5, refillRate: 1, refillInterval: 1000 });
+    - const app = express();
+
+    - app.use(
+    - expressRateLimiter(limiter, {
+       - keyGenerator: (req) => req.headers['x-api-key'] || req.ip, // Custom key extraction
+       - logger: console, // Any logger with info/warn methods
+       - onBlocked: (req, res) => res.status(429).send('Custom: Too Many Requests'), // Custom block response
+    - })
+    - );
+
+    - app.get('/', (req, res) => res.send('Hello, world!'));
+    - app.listen(3000, () => console.log('Server running on port 3000'));
+- }
+
+---
+
 ## API
 
 ### `TokenBucket` Class
@@ -89,6 +114,20 @@ Sliding Window:
 
 ---
 
+### Express Middleware Adapter
+
+**Function:**
+expressRateLimiter(limiter, options)
+
+text
+- `limiter`: Instance of TokenBucket or SlidingWindowCounter
+- `options` (object):
+  - `keyGenerator`: Function to extract key from request (default: `req.ip`)
+  - `onBlocked`: Function to handle blocked requests (default: 429 JSON)
+  - `logger`: Logger object (default: `console`)
+
+---
+
 ## Testing
 
 Run tests with [Jest](https://jestjs.io/):
@@ -96,15 +135,16 @@ Run tests with [Jest](https://jestjs.io/):
 
 ---
 
-## Roadmap
+## 🗺️ Roadmap
 
 - [x] Token Bucket algorithm (in-memory)
-- [X] Sliding Window Counter algorithm
+- [x] Sliding Window Counter algorithm (in-memory)
+- [x] Express middleware adapter
+- [x] Logging support
 - [ ] Pluggable storage (Redis, file, etc.)
-- [ ] Logging support
-- [ ] Express/Nest/Fastify middleware adapters
-- [ ] Advanced configuration (per-route, per-user)
-- [ ] Comprehensive documentation & examples
+- [ ] Per-route/per-user advanced configuration
+- [ ] Middleware adapters for Nest/Fastify
+- [ ] Comprehensive documentation & more examples
 
 ## 👨‍💻 Author
 
