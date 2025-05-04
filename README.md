@@ -15,12 +15,15 @@ Designed for easy integration, customization, and future expansion (Redis suppor
 - Easy to use in any Node.js backend
 - Express middleware adapter for seamless integration
 - Unit tested
+- **Well-tested** with edge cases and error handling
+- **Graceful fallback** to in-memory storage on Redis failure
 
 ---
 
 ## Installation
 
 - npm install rate-limiting-library
+- npm install express ioredis
 
 ---
 
@@ -78,6 +81,13 @@ Token Bucket
     - app.get('/', (req, res) => res.send('Hello, world!'));
     - app.listen(3000, () => console.log('Server running on port 3000'));
 - }
+
+### Memory Abstraction - In Memory + Redis
+1. Using Redis as the Store
+- See [`examples/express-example.js`](./examples/express-example.js) for a complete example.
+
+2. Using In-Memory Store
+- Just omit the Redis options and pass `new MemoryStore()` as the store.
 
 ---
 
