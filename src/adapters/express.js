@@ -1,5 +1,5 @@
 /**
- * Express middleware adapter for rate limiting.
+ * Express middleware adapter for rate limiting (async/await).
  * @param {Object} limiter - Instance of TokenBucket or SlidingWindowCounter
  * @param {Object} options - Configuration options
  * @param {Function} [options.keyGenerator] - Function to extract key from req (default: req.ip)
@@ -19,9 +19,9 @@ function expressRateLimiter(limiter, options = {}) { // limiter is an instance o
         ? limiter.tryRemoveToken.bind(limiter)
         : limiter.tryRequest.bind(limiter);
   
-    return (req, res, next) => {
+    return async (req, res, next) => {
       const key = keyGenerator(req);
-      const allowed = limiterMethod(key);
+      const allowed = await limiterMethod(key);
   
       if (allowed) {
         logger.info?.(`[RateLimiter] Allowed: ${key}`);

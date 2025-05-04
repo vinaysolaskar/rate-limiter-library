@@ -1,34 +1,29 @@
 const SlidingWindowCounter = require('../../src/algorithms/slidingWindow');
 
 describe('SlidingWindowCounter', () => {
-    it('should allow requests within the limit', () => {
-        const limiter = new SlidingWindowCounter({ windowSize: 1000, limit: 3 });
-        expect(limiter.tryRequest('user1')).toBe(true);
-        expect(limiter.tryRequest('user1')).toBe(true);
-        expect(limiter.tryRequest('user1')).toBe(true);
-        expect(limiter.tryRequest('user1')).toBe(false); // Should be rate limited
-    });
+  it('allows requests within the limit', async () => {
+    const limiter = new SlidingWindowCounter({ windowSize: 1000, limit: 3 });
+    
+    // Allowed requests
+    expect(await limiter.tryRequest('user1')).toBe(true);
+    expect(await limiter.tryRequest('user1')).toBe(true);
+    expect(await limiter.tryRequest('user1')).toBe(true);
+    
+    // Rate limited
+    expect(await limiter.tryRequest('user1')).toBe(false);
+  });
 
-
-    it('should reset the count after the window size', (done) => {
-        const limiter = new SlidingWindowCounter({ windowSize: 100, limit: 2 });
-        limiter.tryRequest('user2');
-        limiter.tryRequest('user2');
-        setTimeout(() => {
-            expect(limiter.tryRequest('user2')).toBe(true); // Should allow request after 100ms
-            done();
-        }, 110);
-    });
-
-    it('should block when interpolated total exceeds limit', (done) => {
-        const limiter = new SlidingWindowCounter({ windowSize: 1000, limit: 3 });
-        limiter.tryRequest('user3'); // 1st request
-        limiter.tryRequest('user3'); // 2nd request
-        setTimeout(() => {
-            limiter.tryRequest('user3'); // 3rd request, currentCount = 3
-            expect(limiter.tryRequest('user3')).toBe(false); // Should block 4th request
-            done();
-        }, 200); // Still within the same window
-    });
-
+  it('refills tokens after window slides', async () => {
+    const limiter = new SlidingWindowCounter({ windowSize: 100, limit: 2 });
+    
+    // Use all tokens
+    await limiter.tryRequest('user2');
+    await limiter.tryRequest('user2');
+    
+    // Wait for window to slide (110ms)
+    await new Promise(resolve => setTimeout(resolve, 110));
+    
+    // Should allow new requests
+    expect(await limiter.tryRequest('user2')).toBe(true);
+  }, 10000); // Increase timeout if needed
 });

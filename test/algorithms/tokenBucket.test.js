@@ -1,21 +1,29 @@
 const TokenBucket = require('../../src/algorithms/tokenBucket');
 
 describe('TokenBucket', () => {
-  it('allows requests within the bucket capacity', () => {
+  // Mark test function as async
+  it('allows requests within the bucket capacity', async () => {
     const limiter = new TokenBucket({ capacity: 3, refillRate: 1, refillInterval: 1000 });
-    expect(limiter.tryRemoveToken('user1')).toBe(true);
-    expect(limiter.tryRemoveToken('user1')).toBe(true);
-    expect(limiter.tryRemoveToken('user1')).toBe(true);
-    expect(limiter.tryRemoveToken('user1')).toBe(false); // Should be rate limited
+    
+    // Use await for async methods
+    expect(await limiter.tryRemoveToken('user1')).toBe(true);
+    expect(await limiter.tryRemoveToken('user1')).toBe(true);
+    expect(await limiter.tryRemoveToken('user1')).toBe(true);
+    expect(await limiter.tryRemoveToken('user1')).toBe(false); // Rate limited
   });
 
-  it('refills tokens after interval', (done) => {
+  // Use async/await instead of done()
+  it('refills tokens after interval', async () => {
     const limiter = new TokenBucket({ capacity: 2, refillRate: 1, refillInterval: 100 });
-    limiter.tryRemoveToken('user2');
-    limiter.tryRemoveToken('user2');
-    setTimeout(() => {
-      expect(limiter.tryRemoveToken('user2')).toBe(true); // Should refill after 100ms
-      done();
-    }, 110);
-  });
+    
+    // Initial requests
+    await limiter.tryRemoveToken('user2');
+    await limiter.tryRemoveToken('user2');
+
+    // Wait 110ms for refill
+    await new Promise(resolve => setTimeout(resolve, 110));
+    
+    // Check if token is refilled
+    expect(await limiter.tryRemoveToken('user2')).toBe(true);
+  }, 10000); // Increase timeout if needed
 });

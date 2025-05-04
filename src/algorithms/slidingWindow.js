@@ -1,3 +1,4 @@
+const MemoryStore = require('../storage/memory');
 /**
  * SlidingWindowCounter
  * 
@@ -22,8 +23,9 @@ class SlidingWindowCounter {
      * @param {Object} options
      * @param {number} [options.windowSize=60000] - Size of the sliding window in milliseconds (default: 1 minute)
      * @param {number} [options.limit=100] - Maximum number of requests allowed per window (default: 100)
-     */
-    constructor({ windowSize = 60000, limit = 100 } = {}) {
+     * @param {Object} [options.store] - Pluggable storage (default: MemoryStore)
+   */
+    constructor({ windowSize = 60000, limit = 100, store } = {}) {
       /**
        * Size of the sliding window in milliseconds.
        * @type {number}
@@ -35,14 +37,8 @@ class SlidingWindowCounter {
        * @type {number}
        */
       this.limit = limit;
-  
-      /**
-       * Internal storage for per-key window data.
-       * Format: key -> { currentWindowStart, currentCount, prevCount }
-       * @type {Map<string, Object>}
-       */
-      this.windows = new Map();
-    }
+    this.store = store || new MemoryStore();
+  }
   
     /**
      * Helper to align the current time to the start of the window.
@@ -50,9 +46,9 @@ class SlidingWindowCounter {
      * @returns {number} - Timestamp of window start
      * @private
      */
-    _getWindowStart(now) {
-      return now - (now % this.windowSize); // E.g., aligns 12:01:23.456 to 12:01:00.000
-    }
+  _getWindowStart(now) {
+    return now - (now % this.windowSize);
+  }
   
     /**
      * Attempts to allow a request for the specified key.
@@ -60,14 +56,14 @@ class SlidingWindowCounter {
      * If the sum is below the limit, the request is allowed and the count is incremented.
      * 
      * @param {string} [key='global'] - Unique identifier for user/client (e.g., IP, user ID)
-     * @returns {boolean} - True if request is allowed, false if rate limited
+     * @returns {Promise<boolean>}
      */
-    tryRequest(key = 'global') {
+    async tryRequest(key = 'global') {
       const now = Date.now();
       const windowStart = this._getWindowStart(now);
   
       // Retrieve or initialize window data for the key
-      let data = this.windows.get(key);
+      let data = await this.store.get(key);
       if (!data) {
         data = {
           currentWindowStart: windowStart,
@@ -93,10 +89,10 @@ class SlidingWindowCounter {
   
       if (total < this.limit) {
         data.currentCount += 1;
-        this.windows.set(key, data);
+        await this.store.set(key, data);
         return true; // Allow request
       } else {
-        this.windows.set(key, data);
+        await this.store.set(key, data);
         return false; // Rate limited
       }
     }

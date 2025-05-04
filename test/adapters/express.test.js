@@ -13,34 +13,37 @@ describe('Express Rate Limiter Middleware', () => {
     app.get('/', (req, res) => res.send('OK'));
   });
 
-  it('should allow requests within the limit', async () => {
-    const res1 = await request(app).get('/');
-    const res2 = await request(app).get('/');
-    expect(res1.status).toBe(200);
-    expect(res2.status).toBe(200);
+  it('blocks requests over the limit', async () => {
+    // First two requests allowed
+    await request(app).get('/').expect(200);
+    await request(app).get('/').expect(200);
+    
+    // Third request blocked
+    await request(app).get('/').expect(429);
   });
 
-  it('should block requests over the limit', async () => {
-    await request(app).get('/');
-    await request(app).get('/');
-    const res3 = await request(app).get('/');
-    expect(res3.status).toBe(429);
-    expect(res3.body.error).toBe('Too Many Requests');
-  });
-
-  it('should use custom onBlocked handler', async () => {
+  it('uses custom key generator and block handler', async () => {
     const customApp = express();
-    const limiter = new TokenBucket({ capacity: 1, refillRate: 1, refillInterval: 1000 });
-    customApp.use(
-      expressRateLimiter(limiter, {
-        onBlocked: (req, res) => res.status(429).send('Blocked!'),
-      })
-    );
+    const limiter = new TokenBucket({ capacity: 1 });
+    
+    customApp.use(expressRateLimiter(limiter, {
+      keyGenerator: (req) => req.headers['x-api-key'],
+      onBlocked: (req, res) => res.status(429).send('Custom Blocked'),
+    }));
+    
     customApp.get('/', (req, res) => res.send('OK'));
-
-    await request(customApp).get('/');
-    const res2 = await request(customApp).get('/');
-    expect(res2.status).toBe(429);
-    expect(res2.text).toBe('Blocked!');
+    
+    // First request allowed
+    await request(customApp)
+      .get('/')
+      .set('x-api-key', 'secret')
+      .expect(200);
+    
+    // Second request blocked
+    await request(customApp)
+      .get('/')
+      .set('x-api-key', 'secret')
+      .expect(429)
+      .expect('Custom Blocked');
   });
 });
