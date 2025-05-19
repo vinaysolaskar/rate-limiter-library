@@ -36,7 +36,7 @@ npm install express ioredis
 ### Basic Example
 Token Bucket
 - Code:
-```sh 
+```js
 {
    const TokenBucket = require('./src/algorithms/tokenBucket');
    const limiter = new TokenBucket({ capacity: 10, refillRate: 2, refillInterval: 1000 });
@@ -56,13 +56,13 @@ Token Bucket
 ### Sliding Window Counter Example
 
 - Code: 
-```sh
+```js
 {
    const SlidingWindowCounter = require('./src/algorithms/slidingWindowCounter');
    const limiter = new SlidingWindowCounter({ windowSize: 60000, limit: 100 }); // 100 requests per minute
    const userKey = 'user456';
-   if (limiter.tryRequest(userKey)) {// Allow request}
-   else {// Block request (rate limited)}
+   if (limiter.tryRequest(userKey)) {/*Allow request*/}
+   else { /*Block request (rate limited)*/}
 }
 ```
 
@@ -71,11 +71,11 @@ Token Bucket
 ### Express Middleware Usage
 
 - Code:
-```sh
+```js
 {
      const express = require('express');
-     const TokenBucket = require('./src/algorithms/tokenBucket');
-     const expressRateLimiter = require('./src/adapters/express');
+     const TokenBucket = require('rate-limiter-library');
+     const expressRateLimiter = require('rate-limiter-library');
      const limiter = new TokenBucket({ capacity: 5, refillRate: 1, refillInterval: 1000 });
      const app = express();
 
@@ -150,6 +150,10 @@ text
 
 ## Testing
 
+Basic Test:
+```sh
+  npm test
+```
 Run tests with [Jest](https://jestjs.io/):
 
 
