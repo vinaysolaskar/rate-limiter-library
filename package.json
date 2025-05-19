@@ -5,18 +5,22 @@
   "scripts": {
     "test": "jest"
   },
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vinaysolaskar/rate-limiter-library.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["rate-limiter", "express", "api", "redis", "nodejs"],
+  "author": "vinaysolaskar1@gmail.com",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/vinaysolaskar/rate-limiter-library/issues"
   },
   "homepage": "https://github.com/vinaysolaskar/rate-limiter-library#readme",
-  "description": "",
+  "description": "This is a rate limiter library that can be used to limit the number of requests to a server in a given time period. It uses Redis as a backend to store the request counts and expiration times.",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "devDependencies": {
     "eslint": "^9.26.0",
     "ioredis-mock": "^8.9.0",
