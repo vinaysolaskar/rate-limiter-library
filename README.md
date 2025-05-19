@@ -38,7 +38,7 @@ Token Bucket
 - Code:
 ```js
 {
-   const TokenBucket = require('./src/algorithms/tokenBucket');
+   const TokenBucket = require('rate-limiter-library');
    const limiter = new TokenBucket({ capacity: 10, refillRate: 2, refillInterval: 1000 });
 
    // Example: Check if a user (by key) can make a request
@@ -58,7 +58,7 @@ Token Bucket
 - Code: 
 ```js
 {
-   const SlidingWindowCounter = require('./src/algorithms/slidingWindowCounter');
+   const SlidingWindowCounter = require('rate-limiter-library');
    const limiter = new SlidingWindowCounter({ windowSize: 60000, limit: 100 }); // 100 requests per minute
    const userKey = 'user456';
    if (limiter.tryRequest(userKey)) {/*Allow request*/}
