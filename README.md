@@ -22,8 +22,11 @@ Designed for easy integration, customization, and future expansion (Redis suppor
 
 ## Installation
 
-- npm install rate-limiting-library
-- npm install express ioredis
+[![npm version](https://img.shields.io/npm/v/rate-limiter-library.svg)](https://www.npmjs.com/package/rate-limiter-library)
+
+```sh
+npm install rate-limiter-library
+npm install express ioredis
 
 ---
 
@@ -31,56 +34,59 @@ Designed for easy integration, customization, and future expansion (Redis suppor
 
 ### Basic Example
 Token Bucket
-- Code: 
-- {
-    - const TokenBucket = require('./src/algorithms/tokenBucket');
-    - const limiter = new TokenBucket({ capacity: 10, refillRate: 2, refillInterval: 1000 });
+- Code:
+```sh 
+{
+   const TokenBucket = require('./src/algorithms/tokenBucket');
+   const limiter = new TokenBucket({ capacity: 10, refillRate: 2, refillInterval: 1000 });
 
-    - // Example: Check if a user (by key) can make a request
-    - const userKey = 'user123';
-    - if (limiter.tryRemoveToken(userKey)) {
-    - // Allow request
-    - } else {
-    - // Block request (rate limited)
-    - }
-- }
+   // Example: Check if a user (by key) can make a request
+   const userKey = 'user123';
+   if (limiter.tryRemoveToken(userKey)) {
+   // Allow request
+   } else {
+   // Block request (rate limited)
+   }
+}
 
 ---
 
 ### Sliding Window Counter Example
 
 - Code: 
-- {
-    - const SlidingWindowCounter = require('./src/algorithms/slidingWindowCounter');
-    - const limiter = new SlidingWindowCounter({ windowSize: 60000, limit: 100 }); // 100 requests per minute
-    - const userKey = 'user456';
-    - if (limiter.tryRequest(userKey)) {// Allow request}
-    - else {// Block request (rate limited)}
-- }
+```sh
+{
+   const SlidingWindowCounter = require('./src/algorithms/slidingWindowCounter');
+   const limiter = new SlidingWindowCounter({ windowSize: 60000, limit: 100 }); // 100 requests per minute
+   const userKey = 'user456';
+   if (limiter.tryRequest(userKey)) {// Allow request}
+   else {// Block request (rate limited)}
+}
 
 ---
 
 ### Express Middleware Usage
 
 - Code:
-- {
-    - const express = require('express');
-    - const TokenBucket = require('./src/algorithms/tokenBucket');
-    - const expressRateLimiter = require('./src/adapters/express');
-    - const limiter = new TokenBucket({ capacity: 5, refillRate: 1, refillInterval: 1000 });
-    - const app = express();
+```sh
+{
+     const express = require('express');
+     const TokenBucket = require('./src/algorithms/tokenBucket');
+     const expressRateLimiter = require('./src/adapters/express');
+     const limiter = new TokenBucket({ capacity: 5, refillRate: 1, refillInterval: 1000 });
+     const app = express();
 
-    - app.use(
-    - expressRateLimiter(limiter, {
-       - keyGenerator: (req) => req.headers['x-api-key'] || req.ip, // Custom key extraction
-       - logger: console, // Any logger with info/warn methods
-       - onBlocked: (req, res) => res.status(429).send('Custom: Too Many Requests'), // Custom block response
-    - })
-    - );
+     app.use(
+     expressRateLimiter(limiter, {
+        keyGenerator: (req) => req.headers['x-api-key'] || req.ip, // Custom key extraction
+        logger: console, // Any logger with info/warn methods
+        onBlocked: (req, res) => res.status(429).send('Custom: Too Many Requests'), // Custom block response
+     })
+     );
 
-    - app.get('/', (req, res) => res.send('Hello, world!'));
-    - app.listen(3000, () => console.log('Server running on port 3000'));
-- }
+     app.get('/', (req, res) => res.send('Hello, world!'));
+     app.listen(3000, () => console.log('Server running on port 3000'));
+}
 
 ### Memory Abstraction - In Memory + Redis
 1. Using Redis as the Store
@@ -151,7 +157,7 @@ Run tests with [Jest](https://jestjs.io/):
 - [x] Sliding Window Counter algorithm (in-memory)
 - [x] Express middleware adapter
 - [x] Logging support
-- [ ] Pluggable storage (Redis, file, etc.)
+- [X] Pluggable storage (Redis, file, etc.)
 - [ ] Per-route/per-user advanced configuration
 - [ ] Middleware adapters for Nest/Fastify
 - [ ] Comprehensive documentation & more examples

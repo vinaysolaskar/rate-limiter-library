@@ -3,6 +3,7 @@ const RedisStore = require('../src/storage/redis');
 const MemoryStore = require('../src/storage/memory');
 const TokenBucket = require('../src/algorithms/tokenBucket');
 const expressRateLimiter = require('../src/adapters/express');
+const setRateLimitHeaders = require('../src/utils/rateLimiter');
 
 // 1. Create a Redis client (use your Redis Cloud connection string or localhost)
 const redisOptions = {
@@ -36,6 +37,17 @@ app.use((req, res, next) => {
   console.log('Client IP:', req.ip);
   next();
 });
+
+app.use(async (req, res, next) => {
+    const allowed = await limiter.tryRemoveToken(req.ip);
+    if (allowed) {
+      setRateLimitHeaders(res, limiter.capacity, await limiter.getTokens(req.ip), /* reset time */);
+      next();
+    } else {
+      setRateLimitHeaders(res, limiter.capacity, 0, /* reset time */);
+      res.status(429).json({ message: 'Too many requests' });
+    }
+  });  
 
 // 4. Apply rate limiting middleware (per IP)
 app.use(expressRateLimiter(limiter, {
